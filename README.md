@@ -45,6 +45,7 @@ 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
 # Object Detector
 ## OpenPCdet
 ```
+python train.py --cfg_file cfgs/kitti_models/sfd.yaml
 python train.py --cfg_file cfgs/kitti_models/voxel_rcnn_car.yaml --epochs 100 --max_ckpt_save_num 100
 python test.py --cfg_file cfgs/kitti_models/voxel_rcnn_car.yaml --batch_size 10 --eval_all
 

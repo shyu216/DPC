@@ -15,7 +15,8 @@ from ...ops.iou3d_nms import iou3d_nms_utils
 from .sfd_head_utils import GAF, CPConvs
 
 class SFDHead(RoIHeadTemplate):
-    def __init__(self, input_channels, model_cfg, point_cloud_range, voxel_size, num_class=1, **kwargs):
+    # rename input_channels to backbone_channels
+    def __init__(self, backbone_channels, model_cfg, point_cloud_range, voxel_size, num_class=1, **kwargs):
         super().__init__(num_class=num_class, model_cfg=model_cfg)
         self.model_cfg = model_cfg
         self.pool_cfg = model_cfg.ROI_GRID_POOL
@@ -29,7 +30,7 @@ class SFDHead(RoIHeadTemplate):
         for src_name in self.pool_cfg.FEATURES_SOURCE:
             mlps = LAYER_cfg[src_name].MLPS
             for k in range(len(mlps)):
-                mlps[k] = [input_channels[src_name]] + mlps[k]
+                mlps[k] = [backbone_channels[src_name]] + mlps[k]
             pool_layer = voxelpool_stack_modules.NeighborVoxelSAModuleMSG(
                 query_ranges=LAYER_cfg[src_name].QUERY_RANGES,
                 nsamples=LAYER_cfg[src_name].NSAMPLE,

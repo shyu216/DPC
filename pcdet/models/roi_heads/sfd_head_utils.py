@@ -47,6 +47,13 @@ class CPConvs(nn.Module):
         pointnet_in_x0y0z0u0v0r0 = points_features[:,[0,1,2,6,7,8]].unsqueeze(dim=1).repeat([1,M,1])
         pointnet_in_xyzuvr       = pointnet_in_xiyiziuiviri - pointnet_in_x0y0z0u0v0r0
         points_features[:, 3:6] /= 255.0
+
+
+        # suggest by zhihu
+        from torch.nn.functional import normalize
+        points_features[:, :3] = normalize(points_features[:, :3], dim=0)
+        points_features[:, 6:] = normalize(points_features[:, 6:], dim=0)
+            
         
         pointnet1_in_fea        = points_features[:,:6].view(N,1,-1)
         pointnet1_out_fea       = self.pointnet1_fea(pointnet1_in_fea).view(N,-1)

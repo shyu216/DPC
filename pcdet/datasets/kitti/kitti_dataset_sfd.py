@@ -482,6 +482,9 @@ class KittiDatasetSFD(DatasetTemplate):
         batch_size = len(batch_list)
         ret = {}
 
+        # suggest by zhihu
+        data_dict = data_dict.pop('valid_noise')
+        
         for key, val in data_dict.items():
             try:
                 if key in ['voxels', 'voxel_num_points', 'voxels_pseudo', 'voxel_num_points_pseudo']:

@@ -594,7 +594,13 @@ class SFDHead(RoIHeadTemplate):
                 targets_dict['rcnn_cls_labels'].fill_(-1)
                 targets_dict['reg_valid_mask'].fill_(-1)
         pseudo_features = pooled_pseudo_features[sparse_idx[:, 0], sparse_idx[:, 1], sparse_idx[:, 2], sparse_idx[:, 3]]
-        coords = sparse_idx.int()
+                
+        # https://zhuanlan.zhihu.com/p/524097054?
+        # around line 601 before:
+        # coords = sparse_idx.int()
+        # after
+        coords = sparse_idx.int().contiguous()
+
 
         pseudo_features = spconv.SparseConvTensor(pseudo_features, coords, sparse_shape, batch_size_rcnn)
         x_pseudo = self.conv_pseudo(pseudo_features)

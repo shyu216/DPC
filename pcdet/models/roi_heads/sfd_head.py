@@ -4,7 +4,7 @@ from .roi_head_template import RoIHeadTemplate
 from ...utils import common_utils, spconv_utils
 from ...ops.pointnet2.pointnet2_stack import voxel_pool_modules as voxelpool_stack_modules
 from ...ops.roiaware_pool3d import roiaware_pool3d_utils
-import spconv
+# import spconv
 import numpy as np
 import torch.nn.functional as F
 from ...utils import box_coder_utils, common_utils, loss_utils, box_utils
@@ -13,6 +13,8 @@ import cv2
 from ...ops.iou3d import oriented_iou_loss
 from ...ops.iou3d_nms import iou3d_nms_utils
 from .sfd_head_utils import GAF, CPConvs
+
+from ...utils.spconv_utils import spconv
 
 class SFDHead(RoIHeadTemplate):
     # rename input_channels to backbone_channels

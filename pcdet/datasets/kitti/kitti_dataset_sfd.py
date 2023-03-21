@@ -483,8 +483,9 @@ class KittiDatasetSFD(DatasetTemplate):
         ret = {}
 
         # suggest by zhihu
-        data_dict = data_dict.pop('valid_noise')
-        
+        valDel = data_dict.pop('valid_noise')
+        # print("The value that was removed is: ", valDel)
+
         for key, val in data_dict.items():
             try:
                 if key in ['voxels', 'voxel_num_points', 'voxels_pseudo', 'voxel_num_points_pseudo']:

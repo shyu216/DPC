@@ -483,7 +483,7 @@ class KittiDatasetSFD(DatasetTemplate):
         ret = {}
 
         # suggest by zhihu
-        valDel = data_dict.pop('valid_noise')
+        # valDel = data_dict.pop('valid_noise')
         # print("The value that was removed is: ", valDel)
 
         for key, val in data_dict.items():

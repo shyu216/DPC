@@ -280,12 +280,19 @@ def boxes3d_kitti_camera_to_imageboxes(boxes3d, calib, image_shape=None):
     max_uv = np.max(corners_in_image, axis=1)  # (N, 2)
     boxes2d_image = np.concatenate([min_uv, max_uv], axis=1)
     if image_shape is not None:
-        boxes2d_image[:, 0] = np.clip(boxes2d_image[:, 0], a_min=0, a_max=image_shape[1] - 1)
-        boxes2d_image[:, 1] = np.clip(boxes2d_image[:, 1], a_min=0, a_max=image_shape[0] - 1)
-        boxes2d_image[:, 2] = np.clip(boxes2d_image[:, 2], a_min=0, a_max=image_shape[1] - 1)
-        boxes2d_image[:, 3] = np.clip(boxes2d_image[:, 3], a_min=0, a_max=image_shape[0] - 1)
+        try:
+            boxes2d_image[:, 0] = np.clip(boxes2d_image[:, 0], a_min=0, a_max=image_shape[1] - 1)
+            boxes2d_image[:, 1] = np.clip(boxes2d_image[:, 1], a_min=0, a_max=image_shape[0] - 1)
+            boxes2d_image[:, 2] = np.clip(boxes2d_image[:, 2], a_min=0, a_max=image_shape[1] - 1)
+            boxes2d_image[:, 3] = np.clip(boxes2d_image[:, 3], a_min=0, a_max=image_shape[0] - 1)
 
-    return boxes2d_image
+        except:
+            boxes2d_image[:, 0] = np.clip(boxes2d_image[:, 0], a_min=0, a_max=(image_shape[1] - 1).cpu())
+            boxes2d_image[:, 1] = np.clip(boxes2d_image[:, 1], a_min=0, a_max=(image_shape[0] - 1).cpu())
+            boxes2d_image[:, 2] = np.clip(boxes2d_image[:, 2], a_min=0, a_max=(image_shape[1] - 1).cpu())
+            boxes2d_image[:, 3] = np.clip(boxes2d_image[:, 3], a_min=0, a_max=(image_shape[0] - 1).cpu()) 
+        
+        return boxes2d_image
 
 
 def boxes_iou_normal(boxes_a, boxes_b):

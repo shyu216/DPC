@@ -1,5 +1,5 @@
 DATASET: 'KittiDatasetSFD'
-DATA_PATH: '../data/kitti_sfd_seguv_twise'
+DATA_PATH: '../data/kitti_dpc'
 
 POINT_CLOUD_RANGE: [0, -40, -3, 70.4, 40, 1]
 

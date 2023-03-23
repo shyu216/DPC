@@ -2,25 +2,16 @@
 **build**
 **egg-info**
 **dist**
-
 data/
-
 *.pyc
 venv/
 *.idea/
 *.so
-# *.yaml
+*.yaml
 *.sh
 *.pth
 *.pkl
 *.zip
 *.bin
-
-latest_model.pth
-kitti_infos_val.pkl
-result.pkl
-output/
-
-output2/
-
+output
 version.py

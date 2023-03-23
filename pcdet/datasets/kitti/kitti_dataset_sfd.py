@@ -565,7 +565,7 @@ if __name__ == '__main__':
         from pathlib import Path
         from easydict import EasyDict
         dataset_cfg = EasyDict(yaml.load(open(sys.argv[2])))
-        ROOT_DIR = Path('../data/kitti_sfd_seguv_twise')
+        ROOT_DIR = Path('../data/kitti_dpc')
         create_kitti_infos(
             dataset_cfg=dataset_cfg,
             class_names=['Car', 'Pedestrian', 'Cyclist'],

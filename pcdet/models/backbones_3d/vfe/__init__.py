@@ -5,6 +5,8 @@ from .dynamic_pillar_vfe import DynamicPillarVFE, DynamicPillarVFESimple2D
 from .image_vfe import ImageVFE
 from .vfe_template import VFETemplate
 
+from .mean_vfe_dpc import MeanVFEDPC
+
 __all__ = {
     'VFETemplate': VFETemplate,
     'MeanVFE': MeanVFE,
@@ -12,5 +14,8 @@ __all__ = {
     'ImageVFE': ImageVFE,
     'DynMeanVFE': DynamicMeanVFE,
     'DynPillarVFE': DynamicPillarVFE,
-    'DynamicPillarVFESimple2D': DynamicPillarVFESimple2D
+    'DynamicPillarVFESimple2D': DynamicPillarVFESimple2D,
+
+    # add component
+    'MeanVFEDPC': MeanVFEDPC,
 }

@@ -14,6 +14,7 @@ from .mppnet_e2e import MPPNetE2E
 from .pillarnet import PillarNet
 
 from .sfd import SFD
+from .dpc import SECONDNetDPC
 
 __all__ = {
     'Detector3DTemplate': Detector3DTemplate,
@@ -32,7 +33,8 @@ __all__ = {
     'MPPNetE2E': MPPNetE2E,
     'PillarNet': PillarNet,
     
-    'SFD': SFD
+    'SFD': SFD,
+    'SECONDNetDPC': SECONDNetDPC,
 }
 
 

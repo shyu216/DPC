@@ -89,6 +89,19 @@ class DataProcessor(object):
                 use_center_to_filter=config.get('USE_CENTER_TO_FILTER', True)
             )
             data_dict['gt_boxes'] = data_dict['gt_boxes'][mask]
+        
+        #DPC
+        if data_dict.get('points_dpc', None) is not None:
+            mask = common_utils.mask_points_by_range(data_dict['points_dpc'], self.point_cloud_range)
+            data_dict['points_dpc'] = data_dict['points_dpc'][mask]
+
+        if data_dict.get('gt_boxes_dpc', None) is not None and config.REMOVE_OUTSIDE_BOXES and self.training:
+            mask = box_utils.mask_boxes_outside_range_numpy(
+                data_dict['gt_boxes_dpc'], self.point_cloud_range, min_num_corners=config.get('min_num_corners_dpc', 1), 
+                use_center_to_filter=config.get('USE_CENTER_TO_FILTER', True)
+            )
+            data_dict['gt_boxes_dpc'] = data_dict['gt_boxes_dpc'][mask]
+        
         return data_dict
 
     def shuffle_points(self, data_dict=None, config=None):
@@ -100,6 +113,13 @@ class DataProcessor(object):
             shuffle_idx = np.random.permutation(points.shape[0])
             points = points[shuffle_idx]
             data_dict['points'] = points
+
+            #DPC
+            if 'points_dpc' in data_dict:
+                points = data_dict['points_dpc']
+                shuffle_idx = np.random.permutation(points.shape[0])
+                points = points[shuffle_idx]
+                data_dict['points_dpc'] = points
 
         return data_dict
 
@@ -141,6 +161,20 @@ class DataProcessor(object):
         data_dict['voxels'] = voxels
         data_dict['voxel_coords'] = coordinates
         data_dict['voxel_num_points'] = num_points
+
+        #DPC
+        if 'points_dpc' in data_dict:
+            points = data_dict['points_dpc']
+            voxel_output = self.voxel_generator.generate(points)
+            voxels, coordinates, num_points = voxel_output
+
+            if not data_dict['use_lead_xyz']:
+                voxels = voxels[..., 3:]  # remove xyz in voxels(N, 3)
+
+            data_dict['voxels_dpc'] = voxels
+            data_dict['voxel_coords_dpc'] = coordinates
+            data_dict['voxel_num_points_dpc'] = num_points
+
         return data_dict
 
     def sample_points(self, data_dict=None, config=None):
@@ -173,6 +207,32 @@ class DataProcessor(object):
                 choice = np.concatenate((choice, extra_choice), axis=0)
             np.random.shuffle(choice)
         data_dict['points'] = points[choice]
+
+        #DPC
+        if 'points_dpc' in data_dict:
+            points = data_dict['points_dpc']
+            if num_points < len(points):
+                pts_depth = np.linalg.norm(points[:, 0:3], axis=1)
+                pts_near_flag = pts_depth < 40.0
+                far_idxs_choice = np.where(pts_near_flag == 0)[0]
+                near_idxs = np.where(pts_near_flag == 1)[0]
+                choice = []
+                if num_points > len(far_idxs_choice):
+                    near_idxs_choice = np.random.choice(near_idxs, num_points - len(far_idxs_choice), replace=False)
+                    choice = np.concatenate((near_idxs_choice, far_idxs_choice), axis=0) \
+                        if len(far_idxs_choice) > 0 else near_idxs_choice
+                else: 
+                    choice = np.arange(0, len(points), dtype=np.int32)
+                    choice = np.random.choice(choice, num_points, replace=False)
+                np.random.shuffle(choice)
+            else:
+                choice = np.arange(0, len(points), dtype=np.int32)
+                if num_points > len(points):
+                    extra_choice = np.random.choice(choice, num_points - len(points), replace=False)
+                    choice = np.concatenate((choice, extra_choice), axis=0)
+                np.random.shuffle(choice)
+            data_dict['points_dpc'] = points[choice]
+            
         return data_dict
 
     def calculate_grid_size(self, data_dict=None, config=None):
@@ -357,3 +417,55 @@ class DataProcessor(object):
         sample_mask = ~ignore_mask
         data_dict['points_pseudo'] = points[sample_mask]
         return data_dict
+    
+# DPC
+
+
+class VoxelGeneratorWrapperDPC():
+    def __init__(self, vsize_xyz, coors_range_xyz, num_point_features, max_num_points_per_voxel, max_num_voxels):
+        try:
+            from spconv.utils import VoxelGeneratorV2 as VoxelGenerator
+            self.spconv_ver = 1
+        except:
+            try:
+                from spconv.utils import VoxelGenerator
+                self.spconv_ver = 1
+            except:
+                from spconv.utils import Point2VoxelCPU3d as VoxelGenerator
+                self.spconv_ver = 2
+
+        if self.spconv_ver == 1:
+            self._voxel_generator = VoxelGenerator(
+                voxel_size=vsize_xyz,
+                point_cloud_range=coors_range_xyz,
+                max_num_points=max_num_points_per_voxel,
+                max_voxels=max_num_voxels
+            )
+        else:
+            self._voxel_generator = VoxelGenerator(
+                vsize_xyz=vsize_xyz,
+                coors_range_xyz=coors_range_xyz,
+                num_point_features=num_point_features,
+                max_num_points_per_voxel=max_num_points_per_voxel,
+                max_num_voxels=max_num_voxels
+            )
+
+    def generate(self, points):
+        if self.spconv_ver == 1:
+            voxel_output = self._voxel_generator.generate(points)
+            if isinstance(voxel_output, dict):
+                voxels, coordinates, num_points = \
+                    voxel_output['voxels_dpc'], voxel_output['coordinates_dpc'], voxel_output['num_points_per_voxel_dpc']
+            else:
+                voxels, coordinates, num_points = voxel_output
+        else:
+            assert tv is not None, f"Unexpected error, library: 'cumm' wasn't imported properly."
+            voxel_output = self._voxel_generator.point_to_voxel(tv.from_numpy(points))
+            tv_voxels, tv_coordinates, tv_num_points = voxel_output
+            # make copy with numpy(), since numpy_view() will disappear as soon as the generator is deleted
+            voxels = tv_voxels.numpy()
+            coordinates = tv_coordinates.numpy()
+            num_points = tv_num_points.numpy()
+        return voxels, coordinates, num_points
+
+

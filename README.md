@@ -6,7 +6,7 @@
 
 - Using GPU
 ```
-srun --gres=gpu:1 -w gpu34 --pty /bin/bash
+srun --gres=gpu:1 -w gpu38 --pty /bin/bash
 
 sbatch my.cmd
 
@@ -51,6 +51,11 @@ python test.py --cfg_file cfgs/kitti_models/voxel_rcnn_car.yaml --batch_size 10 
 tensorboard --logdir tensorboard
 
 python test.py --cfg_file cfgs/kitti_models/voxel_rcnn_car.yaml --batch_size 10 --ckpt ../../models/voxel_rcnn_car_84.54.pth
+
+
+python train_dpc.py --cfg_file cfgs/kitti_models/second_dpc.yaml
+
+python test.py --cfg_file cfgs/kitti_models/second.yaml --batch_size 10 --ckpt /research/dept8/fyp22/lj2202/models/second_7862.pth
 ```
 
 
